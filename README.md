@@ -4,10 +4,12 @@ The idea of this repo is threefold:
 - Figure out how to Set up simple web server and connection pool with raw Java 21, without any framework
 - See whether we can compile the two tools (database writers and readers) to native with GraalVM with some ease
 
-Theory is that UUIDv4 primary keys take longer to insert when size of the table gets bigger. This should not happen with UUIDv7 keys, at lest not
-to same extent. To study that, we insert rows 500k at a time and print out the average insertion time and chart these.
+Theory is that UUIDv4 primary keys take longer to insert when size of the table gets bigger, since the B-tree backing up the primary key index is not
+that well compatible with randomness of UUIDv4. This should not happen with UUIDv7 keys, at lest not
+to same extent, since UUIDv7 keys begin with timestamps, making it uniformly growing. This makes it easier to keep the B-tree in balance.
+To study that, we insert rows 500k at a time and print out the average insertion time and chart these.
 
-For reading both should, in, theory, handle ewually.
+For reading both should, in theory, handle ewually.
 
 ## API
 We are creating an API with following 4 endpoints:
@@ -91,7 +93,9 @@ Furthermore, the follwing can be said:
 - For both tables, the time increases as we table size increases
 - There wide variability in insert times (possibly caused by test setup)
 
-So we can say, that writing to and reading from UUIDv7 table is slightly faster, but not dramatically so.
+So we can say, that writing to and reading from UUIDv7 table is slightly faster, but not dramatically so. 
+
+We may need to add further rows to tables to see bigger differences.
 
 ## Conclusions, Java 21 servers capabilities
 Java 21 is much better suited to server stuff than previous versions - Virtual Threads are a boon to server development.
