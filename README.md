@@ -21,7 +21,7 @@ We are creating an API with following 4 endpoints:
 ## Setup
 You need to have a PostgreSQL instance running somewhere. I run PostgreSQL version 16 in local Docker container.
 
-We first manually create a user and database in the Postgre, and the run create_db.sql script.
+First, manually create a user and database in PostgreSQL, and the run create_db.sql script in that database.
 
 ## Building
 Normal build (uberjar)
@@ -87,19 +87,19 @@ The results show that while UUIDv7 primary key writing is faster than UUIDv4 pri
 
 That is, writing to table with UUIDv7 is 11 per cent faster.  
 
-Reading from UUIDv7 endpoint was slightly faster, but difference was small (15 vs 13 ms). 
+Reading from UUIDv7 endpoint was slightly faster, but difference was small (15 vs 13 ms). We are talking 15 per cent faster.
 
 Furthermore, the follwing can be said:
 - For both tables, the time increases as we table size increases
 - There wide variability in insert times (possibly caused by test setup)
 
-So we can say, that writing to and reading from UUIDv7 table is slightly faster, but not dramatically so. 
+So we can say, that writing to and reading from table with UUIDv7 primary key is slightly faster, but not dramatically so. 
 
-We may need to add further rows to tables to see bigger differences.
+We may need to add further rows to tables to see more differences.
 
 ## Conclusions, Java 21 servers capabilities
 Java 21 is much better suited to server stuff than previous versions - Virtual Threads are a boon to server development.
-Combined with JVM's build-in web server, it is easy to set up simple web servers for example for Rest service use.
+Combined with JVM's built-in web server, it is easy to set up simple web servers for example for Rest service use.
 
 ## Conclusions, GraalVM status
 TBD
