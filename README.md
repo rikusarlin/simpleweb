@@ -35,43 +35,34 @@ mvn clean install -P
 ```
 
 ## Running
-We can then run ìnsertion (for UUIDv4) as follows (replacing db, user and pwd with your own):
+We can then run ìnsertion (for UUIDv4) as follows (replacing db, user and pwd with your own, PORT is not mandatory and defaults to 8090):
 ```
 export JDBC_URL="jdbc:postgresql://localhost:5432/<db>"
 export DB_USERNAME="<user>"
 export DB_PASSWORD="<pwd>"
+export PORT=8090
 java -jar ./target/simplewebserver-1.0-SNAPSHOT-jar-with-dependencies.jar
 ```
 
-In another terminal (or browser) window, you can the run following kinds of commands
-- curl -X POST http://localhost:8080/api/uuid4write/500000 (write 500k rows to table with UUIDv4 primary key)
-- curl -X POST http://localhost:8080/api/uuid7write/500000 (write 500k rows to table with UUIDv7 primary key)
-- curl -X GET http://localhost:8080/api/uuid4read/1728223052/20 (read 20 rows from table with UUIDv4 primary key, starting from given UNIX timestamp)
-- curl -X GET http://localhost:8080/api/uuid7read/1728223052/20 (read 20 rows from table with UUIDv7 primary key, starting from given UNIX timestamp)
+In another terminal (or browser) window, you can the run following kinds of commands - modify if you are running in different port:
+- curl -X POST http://localhost:8090/api/uuid4write/500000 (write 500k rows to table with UUIDv4 primary key)
+- curl -X POST http://localhost:8090/api/uuid7write/500000 (write 500k rows to table with UUIDv7 primary key)
+- curl -X GET http://localhost:8090/api/uuid4read/1728223052/20 (read 20 rows from table with UUIDv4 primary key, starting from given UNIX timestamp)
+- curl -X GET http://localhost:8090/api/uuid7read/1728223052/20 (read 20 rows from table with UUIDv7 primary key, starting from given UNIX timestamp)
 
 ## Results, UUIDv4 and UUIDv7 writing
 | Mrows | UUIDv4 avg insert us | UUIDv7 avg insert us |
 | ----- | -------------------- | -------------------- |
-| 0,5   | 441,234              | 365,824              |
-| 1     | 443,737              | 360,929              |
-| 1,5   | 508,891              | 379,562              |
-| 2     | 517,167              | 352,044              |
-| 2,5   | 521,498              | 355,281              |
-| 3     | 529,393              | 380,372              |
-| 3,5   | 515,762              | 510,768              |
-| 4     | 478,7                | 461,496              |
-| 4,5   | 472,741              | 504,573              |
-| 5     | 484,769              | 513,353              |
-| 5,5   | 532,012              | 506,307              |
-| 6     | 526,264              | 516,015              |
-| 6,5   | 530,776              | 475,822              |
-| 7     | 525,49               | 501,867              |
-| 7,5   | 532,947              | 543,258              |
-| 8     | 531,531              | 475,448              |
-| 8,5   | 533,196              | 502,351              |
-| 9     | 552,601              | 504,261              |
-| 9,5   | 534,087              | 524,243              |
-| 10    | 495,192              | 457,293              |
+| 5     | 385                  | 294                  |
+| 10    | 337                  | 303                  |
+| 15    | 347                  | 285                  |
+| 20    | 427                  | 282                  |
+| 25    | 413                  | 280                  |
+| 30    | 463                  | 388                  |
+| 35    | 417                  | 381                  |
+| 40    | 511                  | 301                  |
+| 45    | 488                  | 348                  |
+| 50    | 420                  | 374                  |
 
 ## Results, UUIDv4 and UUIDv7 reading
 I used Postman for these tests, randomizing the start timestamp between min and max timestamps of the tables.
@@ -81,21 +72,23 @@ Test was run for 5 minutes with 20 virtual users, resulting in 4251 requests bei
 - UUIDv7 endpoint: 13 ms
 
 ## Conclusions, UUIDv4 vs UUIDv7 primary keys
-The results show that while UUIDv7 primary key writing is faster than UUIDv4 primary key writing, the difference is not that big:
-- UUIDv4, average insert time: 510 microseconds
-- UUIDv7, average insert time: 460 microseconds
+The results show that while UUIDv7 primary key writing is faster than UUIDv4 primary key writing:
+- UUIDv4, average insert time: 421 microseconds
+- UUIDv7, average insert time: 324 microseconds
 
-That is, writing to table with UUIDv7 is 11 per cent faster.  
+That is, writing to table with UUIDv7 is 30 per cent faster.  
+
+Both average inserton times grows as number of rows in table increases. The growth rate is slighly faster for UUIDv4 primary keys than for UUIDv7 primary keys. 
 
 Reading from UUIDv7 endpoint was slightly faster, but difference was small (15 vs 13 ms). 
 
 Furthermore, the follwing can be said:
 - For both tables, the time increases as we table size increases
-- There wide variability in insert times (possibly caused by test setup)
+- There is some variability in insert times, possibly caused by test setup. The growth is not exactly linear
 
-So we can say, that writing to and reading from UUIDv7 table is slightly faster, but not dramatically so. 
+So we can say, that writing to table with UUIDv7 primary key is somewhat faster and reading from table with UUIDv7 primary is slightly faster, but not dramatically so. 
 
-We may need to add further rows to tables to see bigger differences.
+We may need to add yet further rows to tables to see bigger differences.
 
 ## Conclusions, Java 21 servers capabilities
 Java 21 is much better suited to server stuff than previous versions - Virtual Threads are a boon to server development.

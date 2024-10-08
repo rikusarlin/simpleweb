@@ -16,14 +16,15 @@ public class SimpleWebServer {
     private static final ObjectMapper objectMapper = new ObjectMapper();
 
     public static void main(String[] args) throws IOException {
-        HttpServer server = HttpServer.create(new InetSocketAddress(8080), 0);
+        var port = System.getenv("PORT") != null ? Integer.parseInt(System.getenv("PORT")) : 8080;
+        HttpServer server = HttpServer.create(new InetSocketAddress(port), 0);
         server.createContext("/api/uuid4write/", new Uuid4WriteHandler());
         server.createContext("/api/uuid7write/", new Uuid7WriteHandler());
         server.createContext("/api/uuid4read/", new Uuid4ReadHandler());
         server.createContext("/api/uuid7read/", new Uuid7ReadHandler());
         server.setExecutor(Executors.newVirtualThreadPerTaskExecutor());
         server.start();
-        System.out.println("Server started on port 8080 with virtual threads");
+        System.out.println("Server started on port " + port + " with virtual threads");
     }
 
     static class Uuid4WriteHandler implements HttpHandler {
@@ -102,7 +103,7 @@ public class SimpleWebServer {
             }
         }
     }
-    // Handler for GET /api/uuid7read/:timestamp/:nRows
+
     static class Uuid7ReadHandler implements HttpHandler {
         @Override
         public void handle(HttpExchange exchange) throws IOException {
@@ -125,7 +126,6 @@ public class SimpleWebServer {
     }
 
     private static Connection getConnection() throws SQLException {
-        // Load JDBC info from environment variables
         String url = System.getenv("JDBC_URL");
         String user = System.getenv("JDBC_USER");
         String password = System.getenv("JDBC_PASSWORD");
