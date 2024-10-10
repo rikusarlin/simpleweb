@@ -118,7 +118,7 @@
                          <execution>
                              <id>build-native</id>
                              <goals>
-                                 <goal>build</goal>
+                                 <goal>compile-no-fork</goal>
                              </goals>
                              <phase>package</phase>
                          </execution>
@@ -133,15 +133,19 @@
                      <configuration>
                          <fallback>false</fallback>
                          <buildArgs>
-                             <arg>-H:DashboardDump=fortune -H:+DashboardAll</arg>
+                             <arg>--enable-monitoring</arg>
                          </buildArgs>
                          <agent>
                              <enabled>true</enabled>
                              <options>
-                                 <option>experimental-class-loader-support</option>
-                             </options>
+                                <builtinCallerFilter>true</builtinCallerFilter>
+                                <builtinHeuristicFilter>true</builtinHeuristicFilter>
+                                <enableExperimentalPredefinedClasses>true</enableExperimentalPredefinedClasses>
+                                <enableExperimentalUnsafeAllocationTracing>true</enableExperimentalUnsafeAllocationTracing>
+                                <trackReflectionMetadata>true</trackReflectionMetadata>
+                            </options>
                          </agent>
-                     </configuration>
+                        </configuration>
                  </plugin>
              </plugins>
          </build>
@@ -150,4 +154,3 @@
 
 
 </project>
-

@@ -31,15 +31,20 @@ mvn clean install
 
 Native build (bindary) - requires that you have graalvm and native-image installed:
 ```
-mvn clean install -P
+mvn -Pnative package
 ```
 
-## Running
-We can then run ìnsertion (for UUIDv4) as follows (replacing db, user and pwd with your own, PORT is not mandatory and defaults to 8090):
+If the previous command fails, we need to do some "reflecting". This means we have to run the java program with an "native image agent"
+while we use the program as throughly as possible. The agent creates resource files that used by native-image to figure out which 
+classes to add. Running the jar with agents looks like this:
+
+
+## Running (uberjar)
+We can run uberjar as follows (replacing db, user and pwd with your own, PORT is not mandatory and defaults to 8090):
 ```
 export JDBC_URL="jdbc:postgresql://localhost:5432/<db>"
-export DB_USERNAME="<user>"
-export DB_PASSWORD="<pwd>"
+export JDBC_USER="<user>"
+export JDBC_PASSWORD="<pwd>"
 export PORT=8090
 java -jar ./target/simplewebserver-1.0-SNAPSHOT-jar-with-dependencies.jar
 ```
@@ -49,6 +54,17 @@ In another terminal (or browser) window, you can the run following kinds of comm
 - curl -X POST http://localhost:8090/api/uuid7write/500000 (write 500k rows to table with UUIDv7 primary key)
 - curl -X GET http://localhost:8090/api/uuid4read/1728223052/20 (read 20 rows from table with UUIDv4 primary key, starting from given UNIX timestamp)
 - curl -X GET http://localhost:8090/api/uuid7read/1728223052/20 (read 20 rows from table with UUIDv7 primary key, starting from given UNIX timestamp)
+
+## Running (native jar)
+Native image can be run as follows (replacing db, user and pwd with your own, PORT is not mandatory and defaults to 8090):
+```
+export JDBC_URL="jdbc:postgresql://localhost:5432/<db>"
+export JDBC_USER="<user>"
+export JDBC_PASSWORD="<pwd>"
+export PORT=8090
+
+./target/simpleWebServer
+```
 
 ## Results, UUIDv4 and UUIDv7 writing
 | Mrows | UUIDv4 avg insert us | UUIDv7 avg insert us |
@@ -95,4 +111,21 @@ Java 21 is much better suited to server stuff than previous versions - Virtual T
 Combined with JVM's built-in web server, it is easy to set up simple web servers for example for Rest service use.
 
 ## Conclusions, GraalVM status
-TBD
+Native image creation has been much improved during the last few years. With the simple but non-trivial example we have (3 typical libraries were used),
+I was able to build and run native binary relatively easily. Running an "agent" to figure out dynamic dependencies can be built into Maven build with native-maven-plugin.
+This is encouraging.
+
+Furthermore, native-image has basic support for flight recording, meaning that you can build a native image that is able to produce Java Flight Recorder files
+to analyse with JDK Mission Control. The files produced are not as complete as those produced by a proper JVM, but it is a start.
+```
+        <buildArgs>
+            <arg>--enable-monitoring</arg>
+        </buildArgs>
+```
+
+Native image produced by this web server was 48 megabytes, or 54 megabytes with the above mentioned monitoring support added.
+
+Uberjar version starts in roughly 540 milliseconds.
+
+Native version starts in roughly 540 milliseonds in the first try, and then in some 23 milliseconds on my development laptop! 
+This "measurement" is the time it takes for the program to display the "Server started on port 8090 with virtual threads" text on display.
