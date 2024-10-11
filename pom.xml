@@ -133,7 +133,7 @@
                      <configuration>
                          <fallback>false</fallback>
                          <buildArgs>
-                             <arg>--enable-monitoring</arg>
+                             <arg>--enable-monitoring=jfr</arg>
                          </buildArgs>
                          <agent>
                              <enabled>true</enabled>

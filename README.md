@@ -117,21 +117,25 @@ Java 21 is much better suited to server stuff than previous versions - Virtual T
 Combined with JVM's built-in web server, it is easy to set up simple web servers for example for Rest service use.
 
 ## Conclusions, GraalVM status
-Native image creation was a mixed bad. It was easy at first, but got more difficult later on. At first, I was able to create native images
-without running  native-image-agent to do the required reflection of dynamic class instantations. On the other hand, with the simple but non-trivial
-example we have (3 typical libraries with their dependencies were used), running the agent was quite easy and produced results that allowed image
-creation to pass through.
+Native image creation was a mixed bad. It was easy at first, but got more difficult later on. At first, I was
+able to create native images without running  native-image-agent to do the required reflection of dynamic 
+class instantations. On the other hand, with the simple but non-trivial example we have (3 typical libraries
+with their dependencies were used), running the agent was quite easy and produced results that allowed
+image creation to pass through.
 
-Setting up environment and pom.xml are not exactly easy, but not that difficult either. Native-image properties for building can be set up in many ways.
-In this example I ran native-image-agent with executable uberjar, which creates "combined" native-image properties. 
+Some time later I was able to create native images withoug native-image-agent again. Curious.
+
+Setting up environment and pom.xml are not exactly easy, but not that difficult either. If needed,
+native-image properties for building can be set up in many ways. I ran native-image-agent with 
+executable uberjar, which creates "combined" native-image properties. I was able to use these directly.
 
 On a more positive side, native-image now has basic support for flight recording, meaning that you can build a native image that is able to
 produce Java Flight Recorder files to analyse with JDK Mission Control. The files produced are not as complete as those produced by a proper JVM,
 but it is a start. For this you need to add the following argument to native-image:
 ```
-        <buildArgs>
-            <arg>--enable-monitoring</arg>
-        </buildArgs>
+<buildArgs>
+    <arg>--enable-monitoring=jfr</arg>
+</buildArgs>
 ```
 
 Native image produced by this web server was 48 megabytes, or 54 megabytes with the above mentioned monitoring support added.
@@ -141,4 +145,6 @@ For startup times, uberjar version starts in roughly 540 milliseconds.
 Native version starts in roughly 540 milliseonds in the first try, and then in some 23 milliseconds on my development laptop! 
 This "measurement" is the time it takes for the program to display the "Server started on port 8090 with virtual threads" text on display.
 
-It would interesting to test whether the native-image properties work on other platforms, too.
+I also tried generating native images on another (Windows 64-bit) platform. It turned out that the same native-image specifiction works
+on Window platform, too! On Windows I used GraalVM 23, and on MacOS GraalVM 21, which is also promising. It has to be noted, though, that
+setting up native-image tool on different platforms is not trivial. But once the tool is up and running, native image generation works just fine.
