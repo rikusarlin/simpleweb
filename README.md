@@ -36,8 +36,14 @@ mvn -Pnative package
 
 If the previous command fails, we need to do some "reflecting". This means we have to run the java program with an "native image agent"
 while we use the program as throughly as possible. The agent creates resource files that used by native-image to figure out which 
-classes to add. Running the jar with agents looks like this:
+classes to add. Running the jar with native-image-agent looks like this:
 
+```
+java -agentlib:native-image-agent=config-output-dir=./META-INF/native-image -jar ./target/simplewebserver-1.0-SNAPSHOT-jar-with-dependencies.jar
+```
+
+As mentioned, after this you have to do all kinds of things with the program in order for all things dynamically loaded will be loaded. 
+In this case, it suffices that all URLs mentioned below are called once.
 
 ## Running (uberjar)
 We can run uberjar as follows (replacing db, user and pwd with your own, PORT is not mandatory and defaults to 8090):
@@ -111,12 +117,17 @@ Java 21 is much better suited to server stuff than previous versions - Virtual T
 Combined with JVM's built-in web server, it is easy to set up simple web servers for example for Rest service use.
 
 ## Conclusions, GraalVM status
-Native image creation has been much improved during the last few years. With the simple but non-trivial example we have (3 typical libraries were used),
-I was able to build and run native binary relatively easily. Running an "agent" to figure out dynamic dependencies can be built into Maven build with native-maven-plugin.
-This is encouraging.
+Native image creation was a mixed bad. It was easy at first, but got more difficult later on. At first, I was able to create native images
+without running  native-image-agent to do the required reflection of dynamic class instantations. On the other hand, with the simple but non-trivial
+example we have (3 typical libraries with their dependencies were used), running the agent was quite easy and produced results that allowed image
+creation to pass through.
 
-Furthermore, native-image has basic support for flight recording, meaning that you can build a native image that is able to produce Java Flight Recorder files
-to analyse with JDK Mission Control. The files produced are not as complete as those produced by a proper JVM, but it is a start.
+Setting up environment and pom.xml are not exactly easy, but not that difficult either. Native-image properties for building can be set up in many ways.
+In this example I ran native-image-agent with executable uberjar, which creates "combined" native-image properties. 
+
+On a more positive side, native-image now has basic support for flight recording, meaning that you can build a native image that is able to
+produce Java Flight Recorder files to analyse with JDK Mission Control. The files produced are not as complete as those produced by a proper JVM,
+but it is a start. For this you need to add the following argument to native-image:
 ```
         <buildArgs>
             <arg>--enable-monitoring</arg>
@@ -125,7 +136,9 @@ to analyse with JDK Mission Control. The files produced are not as complete as t
 
 Native image produced by this web server was 48 megabytes, or 54 megabytes with the above mentioned monitoring support added.
 
-Uberjar version starts in roughly 540 milliseconds.
+For startup times, uberjar version starts in roughly 540 milliseconds.
 
 Native version starts in roughly 540 milliseonds in the first try, and then in some 23 milliseconds on my development laptop! 
 This "measurement" is the time it takes for the program to display the "Server started on port 8090 with virtual threads" text on display.
+
+It would interesting to test whether the native-image properties work on other platforms, too.
