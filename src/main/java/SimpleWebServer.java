@@ -37,7 +37,7 @@ public class SimpleWebServer {
 		long duration = 0;
                 try (Connection conn = getConnection()) {
                     for (int i = 0; i < nRows; i++) {
-                        String uuid = UUID.randomUUID().toString();
+                        UUID uuid = UUID.randomUUID();
                         String text = "Prev row took " + duration + " ns";
                         long startTime = System.nanoTime();
                         insertRow(conn, "uuidv4_table", uuid, text);
@@ -65,7 +65,7 @@ public class SimpleWebServer {
                     long duration=0;
                     long totalDuration=0;
                     for (int i = 0; i < nRows; i++) {
-                        String uuid = generateUUIDv7();
+                        UUID uuid = generateUUIDv7();
                         String text = "Prev row took " + duration + " ns";
                         long startTime = System.nanoTime();
                         insertRow(conn, "uuidv7_table", uuid, text);
@@ -132,10 +132,10 @@ public class SimpleWebServer {
         return DriverManager.getConnection(url, user, password);
     }
 
-    private static void insertRow(Connection conn, String tableName, String uuid, String text) throws SQLException {
+    private static void insertRow(Connection conn, String tableName, Object uuid, String text) throws SQLException {
         String sql = "INSERT INTO " + tableName + " (id, text) VALUES (?, ?)";
         try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
-            pstmt.setString(1, uuid);
+            pstmt.setObject(1, uuid);
             pstmt.setString(2, text);
             pstmt.executeUpdate();
         }
@@ -161,7 +161,7 @@ public class SimpleWebServer {
         }
     }
 
-    public static String generateUUIDv7() {
+    public static UUID generateUUIDv7() {
         // Current timestamp in milliseconds (48 bits)
         long timestampMillis = Instant.now().toEpochMilli();
         
@@ -171,7 +171,7 @@ public class SimpleWebServer {
         int randomBits2 = random.nextInt();
 
         // Format the UUIDv7: 48-bit timestamp + 4-bit version + 62 bits of randomness
-        return String.format("%08x-%04x-%04x-%04x-%08x%04x",
+        var uuidv7String = String.format("%08x-%04x-%04x-%04x-%08x%04x",
                 (timestampMillis >>> 16),                    // First 32 bits of the timestamp
                 (timestampMillis & 0xFFFF),                  // Remaining 16 bits of the timestamp
                 0x7000 | ((randomBits1 >>> 48) & 0x0FFF),    // Version 7 and random bits
@@ -179,6 +179,7 @@ public class SimpleWebServer {
                 randomBits1 & 0xFFFFFFFFL,                   // More random bits
                 randomBits2 & 0xFFFF                         // Remaining 16 random bits
         );
+        return UUID.fromString(uuidv7String);
     }
 
     private static void sendResponse(HttpExchange exchange, int statusCode, String response) throws IOException {
